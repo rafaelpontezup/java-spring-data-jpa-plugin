@@ -9,7 +9,10 @@ metadata:
 spec:
   type: app
   compatibility:
-    - python
+    - maven
+    - application.yaml
+    - java
+    - spring
   about: docs/about.md
   implementation: docs/implementation.md
   release-notes: docs/release-notes-0.0.1.md
@@ -17,22 +20,88 @@ spec:
   technologies: # Ref: https://docs.stackspot.com/content-creator/studio/yaml-files/plugin-yaml/#technologies
     - Api
   inputs:
-    - label: Type name of your resource
-      name: resource
-      type: text
-      required: true
-      default: Client
-      pattern: '([A-Z][a-z]+)+'
-      help: 'Inform your resource name (e.g.: Client)'
-    - label: Choose http method of new endpoint
-      name: method
+    - label: Choose one database (RDBMS)
+      name: database_name
       type: text
       items:
-        - GET
-        - POST
-        - PUT
-        - DELETE
-        - PATCH
-      default: GET
-      required: true
-      help: 'Inform the method of the endpoint (e.g.: post or delete)'
+        - H2
+        - PostgreSQL
+        - MySQL
+  computed-inputs:
+    database_name_formatted: "{{database_name|lower}}"
+    path_code_directory: "{{path_code_directory | replace('.','/')}}"
+    path_test_code_directory: "{{path_test_code_directory | replace('.','/')}}"
+
+  hooks:
+    ##
+    # Edit application.yaml
+    ##
+    - type: edit
+      path: src/main/resources/application.yaml
+      trigger: after-render    
+      changes:
+        - search:
+            string: "spring:"
+            insert-after:
+              snippet: snippets/snippet-application.yaml.jinja
+            when:
+              not-exists: "datasource:"
+    ##
+    # Edit application-test.yaml
+    ##
+    - type: edit
+      path: src/test/resources/application-test.yaml
+      trigger: after-render    
+      changes:
+        - search:
+            string: "spring:"
+            insert-after:
+              snippet: snippets/snippet-application-test.yaml.jinja
+            when:
+              not-exists: "datasource:"
+    ##
+    # Edit pom.xml
+    ##
+    - type: edit
+      path: pom.xml
+      trigger: after-render    
+      changes:
+        - search:
+            string: "</dependencies>"
+            insert-before:
+              snippet: snippets/snippet-pom.xml.jinja
+            when:
+              not-exists-snippet: snippets/snippet-pom.xml.jinja
+    ##
+    # Create or edit docker-compose.yaml
+    ##
+    - type: render-templates
+      trigger: after-render
+      path: snippets/docker-postgresql
+      condition:
+        variable: database_name_formatted
+        operator: ==
+        value: postgresql
+
+    - type: render-templates
+      trigger: after-render
+      path: snippets/docker-mysql
+      condition:
+        variable: database_name_formatted
+        operator: ==
+        value: mysql
+    
+    ##
+    # Create directory samples code
+    ##
+
+    - type: run-script
+      trigger: before-input
+      script: scripts/open-pom.py
+      
+    ##
+    # Create samples code
+    ##
+    - type: render-templates
+      trigger: after-render
+      path: snippets/samples
