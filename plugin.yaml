@@ -1,10 +1,10 @@
-schema-version: v1
+schema-version: v2
 kind: plugin
 metadata:
   name: java-spring-data-jpa-plugin
   display-name: java-spring-data-jpa-plugin
   description: Plugin to enable and configure Spring Data JPA in Spring Boot Java applications
-  version: 0.0.1
+  version: 1.0.0
   picture: plugin.png
 spec:
   type: app
@@ -28,9 +28,9 @@ spec:
         - PostgreSQL
         - MySQL
   computed-inputs:
-    database_name_formatted: "{{database_name|lower}}"
-    path_code_directory: "{{path_code_directory | replace('.','/')}}"
-    path_test_code_directory: "{{path_test_code_directory | replace('.','/')}}"
+    database_name_formatted: "{{database_name | lower}}"
+    path_main_code_directory: "{{path_main_code_directory | group_id_folder}}"
+    path_test_code_directory: "{{path_test_code_directory | group_id_folder}}"
 
   hooks:
     ##

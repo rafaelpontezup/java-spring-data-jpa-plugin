@@ -14,16 +14,16 @@ def run(metadata: Metadata = None):
 
     artifact_id = root.find(artifact)
     if "-" in artifact_id.text:
-        artifact_id_text = artifact_id.text.replace("-","")
+        artifact_id_text = artifact_id.text.replace("-", "")
     else:  
         artifact_id_text = artifact_id.text 
 
     package= f"{group_id.text}.{artifact_id.text}"
-    path_code_directory= f"src.main.java.{group_id.text}.{artifact_id_text}"
+    path_main_code_directory= f"src.main.java.{group_id.text}.{artifact_id_text}"
     path_test_code_directory= f"src.test.java.{group_id.text}.{artifact_id_text}"
     
     metadata.inputs['package']=package
-    metadata.inputs['path_code_directory']=path_code_directory
+    metadata.inputs['path_main_code_directory']=path_main_code_directory
     metadata.inputs['path_test_code_directory']=path_test_code_directory
 
     return metadata
