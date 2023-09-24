@@ -1,43 +1,57 @@
 package {{package}}.samples.books;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+
 import org.hibernate.validator.constraints.ISBN;
 
-import javax.persistence.*;
+import java.util.Objects;
 
 import static org.hibernate.validator.constraints.ISBN.Type.ISBN_13;
 
 @Entity
 @Table(
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_isbn", columnNames = "isbn")
-        }
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_isbn", columnNames = "isbn")
+    }
 )
 public class Book {
+
     @Id
     @GeneratedValue
     private Long id;
 
-    @Column(nullable = false)
+    @NotBlank
     @ISBN(type = ISBN_13)
+    @Column(nullable = false, length = 13)
     private String isbn;
 
-    @Column(nullable = false)
+    @NotBlank
+    @Size(max = 120)
+    @Column(nullable = false, length = 120)
     private String title;
 
-    @Column(nullable = false)
+    @NotBlank
+    @Size(max = 4000)
+    @Column(nullable = false, length = 4000)
     private String description;
 
-    public Book(String isbn, String title, String description) {
-        this.isbn = isbn;
-        this.title = title;
-        this.description = description;
-    }
+    @Version
+    private int version;
 
     /**
      * @deprecated Exclusive use of Hibernate
      */
     @Deprecated
-    public Book() {
+    public Book() {}
+
+    public Book(@NotBlank @ISBN String isbn,
+                @NotBlank @Size(max = 120) String title,
+                @NotBlank @Size(max = 4000) String description) {
+        this.isbn = isbn;
+        this.title = title;
+        this.description = description;
     }
 
     public Long getId() {
@@ -47,23 +61,14 @@ public class Book {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Book)) return false;
-
+        if (o == null || getClass() != o.getClass()) return false;
         Book book = (Book) o;
-
-        if (id != null ? !id.equals(book.id) : book.id != null) return false;
-        if (isbn != null ? !isbn.equals(book.isbn) : book.isbn != null) return false;
-        if (title != null ? !title.equals(book.title) : book.title != null) return false;
-        return description != null ? description.equals(book.description) : book.description == null;
+        return Objects.equals(isbn, book.isbn);
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (isbn != null ? isbn.hashCode() : 0);
-        result = 31 * result + (title != null ? title.hashCode() : 0);
-        result = 31 * result + (description != null ? description.hashCode() : 0);
-        return result;
+        return Objects.hash(isbn);
     }
 
     @Override

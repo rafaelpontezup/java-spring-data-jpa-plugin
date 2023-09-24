@@ -6,13 +6,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+/**
+ * Since most repository calls are for read operations, it's good practice
+ * to define, at class level, that transactions are read-only by default.
+ * 
+ * Reference: https://vladmihalcea.com/spring-transaction-best-practices/
+ */
 @Repository
 @Transactional(readOnly = true)
-/*
-    Since most repository calls are for read operations, it is good practice
-    to define at the class level that transactions are read-only.
-    reference: https://vladmihalcea.com/spring-transaction-best-practices/
- */
-public interface BookRepository extends JpaRepository<Book,Long> {
+public interface BookRepository extends JpaRepository<Book, Long> {
+
     Optional<Book> findByIsbn(String isbn);
 }
