@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 from templateframework.metadata import Metadata
+from templateframework.render.default_filters import DefaultFilters
 
 def run(metadata: Metadata = None):
     tree = ET.parse('pom.xml')
@@ -13,17 +14,16 @@ def run(metadata: Metadata = None):
     group_id = root.find(group)
 
     artifact_id = root.find(artifact)
-    if "-" in artifact_id.text:
-        artifact_id_text = artifact_id.text.replace("-", "")
-    else:  
-        artifact_id_text = artifact_id.text 
+    artifact_id_text = artifact_id.text.replace("-", "")
 
-    package= f"{group_id.text}.{artifact_id.text}"
-    path_main_code_directory= f"src.main.java.{group_id.text}.{artifact_id_text}"
-    path_test_code_directory= f"src.test.java.{group_id.text}.{artifact_id_text}"
+    package=f"{group_id.text}.{artifact_id_text}"
+    path_main_code_directory= f"src.main.java.{package}"
+    path_test_code_directory= f"src.test.java.{package}"
+
+    filters = DefaultFilters().create()
     
-    metadata.inputs['package']=package
-    metadata.inputs['path_main_code_directory']=path_main_code_directory
-    metadata.inputs['path_test_code_directory']=path_test_code_directory
+    metadata.computed_inputs['package']=package
+    metadata.computed_inputs['path_main_code_directory']=filters["group_id_folder"](path_main_code_directory)
+    metadata.computed_inputs['path_test_code_directory']=filters["group_id_folder"](path_test_code_directory)
 
     return metadata
